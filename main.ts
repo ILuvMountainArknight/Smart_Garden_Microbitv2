@@ -150,16 +150,24 @@ let Connection = 0
 let State = 0
 let P2M = 0
 let Status = 0
-radio.setGroup(1)
 radio.setTransmitPower(7)
-loops.everyInterval(1000, function () {
-    radio.sendValue("P1T", input.temperature())
-    radio.sendValue("P1M", pins.analogReadPin(AnalogPin.P0))
-})
-loops.everyInterval(500, function () {
-    radio.sendMessage(RadioMessage.Connected$)
-    if (Connection > 0) {
-        Connection += -1
+radio.setGroup(1)
+basic.forever(function () {
+    if (Status == 10) {
+        while (Status == 10) {
+            basic.pause(30000)
+            radio.sendValue("P1T", input.temperature())
+            radio.sendValue("P1M", pins.analogReadPin(AnalogPin.P0))
+            radio.sendMessage(RadioMessage.Connected$)
+            if (Connection > 0) {
+                Connection += -1
+            }
+        }
+    } else {
+        basic.pause(3500)
+        radio.sendValue("P1T", input.temperature())
+        radio.sendValue("P1M", pins.analogReadPin(AnalogPin.P0))
+        radio.sendMessage(RadioMessage.Connected$)
     }
 })
 loops.everyInterval(5000, function () {
@@ -167,6 +175,7 @@ loops.everyInterval(5000, function () {
         basic.pause(9000)
         if (State == 0) {
             while (State == 0) {
+                led.setBrightness(97)
                 basic.showLeds(`
                     . # . . .
                     # # # . #
@@ -176,7 +185,14 @@ loops.everyInterval(5000, function () {
                     `)
                 basic.pause(500)
                 basic.clearScreen()
+                basic.pause(1000)
+                State = 10
             }
         }
+    }
+})
+loops.everyInterval(5000, function () {
+    if (Connection > 0) {
+        Connection += -1
     }
 })
